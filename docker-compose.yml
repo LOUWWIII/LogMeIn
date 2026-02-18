@@ -1,29 +1,31 @@
-version: "3.8"
-
 services:
-  backend:
+  frontend: 
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend: 
     build: ./backend
+    restart: unless-stopped
     ports:
       - "5000:5000"
-    environement:
-      - DATABASE_URL=postgresql://user:password@db:5432/mydb
+    environment:
+      - DB_HOST=database
     depends_on:
-      -db
-
-    nginx:
-      build: ./nginx
-      ports:
-        - "80:80"
-        depends_on:
-          - backend
-    db:
-      image: postgres:15-alpine
-      environement:
-        - POSTGRES_USER=user
-        - POSTGRES_PASSWORD=password
-        - POSTGRES_DB=mydb
-      volumes:
-        - postgres_data:/var/lib/postgresql/data
-
+      - database
+      
+  database: 
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: logs_db
+      POSTGRES_USER: logs_user
+      POSTGRES_PASSWORD: logs_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      
 volumes:
-  postgres_data:
+ postgres_data:
